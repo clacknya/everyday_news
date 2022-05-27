@@ -14,8 +14,6 @@ sv = Service('everydayNews', visible=True, enable_on_default=False, help_='''
 [每日简报] 请发送“每日简报、报哥或每日新闻”
 '''.strip())
 
-path = os.path.dirname(__file__)
-
 async def getImgUrl() -> str:
 	try:
 		async with aiohttp.ClientSession(raise_for_status=True) as session:
