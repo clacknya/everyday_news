@@ -19,33 +19,49 @@ sv_push_60s = Service('每天60秒读懂世界推送', visible=True, enable_on_d
 '''.strip())
 
 async def yiji() -> bytes:
-	try:
-		async with aiohttp.ClientSession(raise_for_status=True) as session:
-			async with session.get('http://api.soyiji.com//news_jpg') as resp:
-				ret = await resp.json()
-			async with session.get(ret['url']) as resp:
-				ret = await resp.read()
-	except Exception as e:
-		sv_query.logger.error('易即简报获取失败')
-		raise
-	else:
-		sv_query.logger.info('易即简报获取成功')
-		return ret
+	retry_attempts = 3
+	while retry_attempts > 0:
+		try:
+			async with aiohttp.ClientSession(raise_for_status=True) as session:
+				async with session.get('http://api.soyiji.com//news_jpg') as resp:
+					ret = await resp.json()
+				async with session.get(ret['url']) as resp:
+					ret = await resp.read()
+		except (
+			aiohttp.client_exceptions.ClientPayloadError,
+			asyncio.exceptions.TimeoutError,
+		) as e:
+			retry_attempts -= 1
+			sv_query.logger.warning(f"易即简报获取出错，剩余尝试次数{retry_attempts}")
+			sv_query.logger.warning(e)
+		except Exception as e:
+			raise
+		else:
+			return ret
+	raise Exception('易即简报获取失败')
 
 async def sixty_seconds() -> bytes:
-	try:
-		async with aiohttp.ClientSession(raise_for_status=True) as session:
-			async with session.get('https://api.iyk0.com/60s/') as resp:
-			# async with session.get('https://api.2xb.cn/zaob') as resp:
-				ret = await resp.json()
-			async with session.get(ret['imageUrl']) as resp:
-				ret = await resp.read()
-	except Exception as e:
-		sv_query.logger.error('每天60秒读懂世界获取失败')
-		raise
-	else:
-		sv_query.logger.info('每天60秒读懂世界获取成功')
-		return ret
+	retry_attempts = 3
+	while retry_attempts > 0:
+		try:
+			async with aiohttp.ClientSession(raise_for_status=True) as session:
+				async with session.get('https://api.iyk0.com/60s/') as resp:
+				# async with session.get('https://api.2xb.cn/zaob') as resp:
+					ret = await resp.json()
+				async with session.get(ret['imageUrl']) as resp:
+					ret = await resp.read()
+		except (
+			aiohttp.client_exceptions.ClientPayloadError,
+			asyncio.exceptions.TimeoutError,
+		) as e:
+			retry_attempts -= 1
+			sv_query.logger.warning(f"每天60秒读懂世界获取出错，剩余尝试次数{retry_attempts}")
+			sv_query.logger.warning(e)
+		except Exception as e:
+			raise
+		else:
+			return ret
+	raise Exception('每天60秒读懂世界获取失败')
 
 @sv_query.on_fullmatch(('每日简报', '报哥', '每日新闻'))
 async def news(bot, ev: CQEvent):
