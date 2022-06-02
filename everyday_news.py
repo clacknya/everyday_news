@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import asyncio
 import aiohttp
 import aiofiles
 
