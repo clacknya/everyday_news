@@ -16,7 +16,7 @@ sv_push_yiji = Service('易即简报推送', visible=True, enable_on_default=Fal
 每日9点推送易即简报
 '''.strip())
 sv_push_60s = Service('每天60秒读懂世界推送', visible=True, enable_on_default=False, help_='''
-每日1点推送每天60秒读懂世界
+每日1点半推送每天60秒读懂世界
 '''.strip())
 
 async def yiji() -> bytes:
@@ -46,8 +46,8 @@ async def sixty_seconds() -> bytes:
 	while retry_attempts > 0:
 		try:
 			async with aiohttp.ClientSession(raise_for_status=True) as session:
-				async with session.get('https://api.iyk0.com/60s/') as resp:
-				# async with session.get('https://api.2xb.cn/zaob') as resp:
+				# async with session.get('https://api.iyk0.com/60s/') as resp:
+				async with session.get('https://api.2xb.cn/zaob') as resp:
 					ret = await resp.json()
 				async with session.get(ret['imageUrl']) as resp:
 					ret = await resp.read()
@@ -86,7 +86,7 @@ async def news_yiji_scheduled():
 		if os.path.isfile(f.name):
 			os.remove(f.name)
 
-@sv_push_60s.scheduled_job('cron', hour='1')
+@sv_push_60s.scheduled_job('cron', hour='1', minute='30')
 async def news_60s_scheduled():
 	try:
 		async with aiofiles.tempfile.NamedTemporaryFile('wb', delete=False) as f:
