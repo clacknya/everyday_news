@@ -24,7 +24,7 @@ async def yiji() -> bytes:
 	while retry_attempts > 0:
 		try:
 			async with aiohttp.ClientSession(raise_for_status=True) as session:
-				async with session.get('http://api.soyiji.com//news_jpg') as resp:
+				async with session.get('http://api.soyiji.com/news_jpg') as resp:
 					ret = await resp.json()
 				async with session.get(ret['url']) as resp:
 					ret = await resp.read()
