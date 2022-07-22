@@ -24,9 +24,9 @@ async def yiji() -> bytes:
 	while retry_attempts > 0:
 		try:
 			async with aiohttp.ClientSession(raise_for_status=True) as session:
-				async with session.get('http://api.soyiji.com/news_jpg') as resp:
+				async with session.get('http://118.31.18.68:8080/news/api/news-file/get') as resp:
 					ret = await resp.json()
-				async with session.get(ret['url']) as resp:
+				async with session.get(ret['result'][0]) as resp:
 					ret = await resp.read()
 		except (
 			aiohttp.client_exceptions.ClientPayloadError,
@@ -75,7 +75,7 @@ async def news(bot, ev: CQEvent):
 		if os.path.isfile(f.name):
 			os.remove(f.name)
 
-@sv_push_yiji.scheduled_job('cron', hour='9')
+@sv_push_yiji.scheduled_job('cron', hour='9', minute='30')
 async def news_yiji_scheduled():
 	try:
 		async with aiofiles.tempfile.NamedTemporaryFile('wb', delete=False) as f:
