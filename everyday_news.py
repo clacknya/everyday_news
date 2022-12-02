@@ -35,6 +35,10 @@ async def yiji() -> bytes:
 			retry_attempts -= 1
 			sv_query.logger.warning(f"易即简报获取出错，剩余尝试次数{retry_attempts}")
 			sv_query.logger.warning(e)
+		except aiohttp.client_exceptions.InvalidURL as e:
+			sv_query.logger.warning('易即简报地址未就绪，等待后重试')
+			sv_query.logger.warning(e)
+			await asyncio.sleep(300)
 		except Exception as e:
 			raise
 		else:
@@ -58,6 +62,10 @@ async def sixty_seconds() -> bytes:
 			retry_attempts -= 1
 			sv_query.logger.warning(f"每天60秒读懂世界获取出错，剩余尝试次数{retry_attempts}")
 			sv_query.logger.warning(e)
+		except aiohttp.client_exceptions.InvalidURL as e:
+			sv_query.logger.warning('每天60秒读懂世界地址未就绪，等待后重试')
+			sv_query.logger.warning(e)
+			await asyncio.sleep(300)
 		except Exception as e:
 			raise
 		else:
