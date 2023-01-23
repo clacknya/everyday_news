@@ -5,9 +5,12 @@ import os
 import asyncio
 import aiohttp
 import aiofiles
+import datetime
 
 from hoshino import Service
 from hoshino.typing import CQEvent, MessageSegment
+
+TZ: datetime.timezone = datetime.timezone(datetime.timedelta(hours=+8))
 
 sv_query = Service('每日简报', visible=True, enable_on_default=True, help_='''
 [每日简报/报哥/每日新闻] 获取每日简报
@@ -26,6 +29,11 @@ async def yiji() -> bytes:
 			async with aiohttp.ClientSession(raise_for_status=True) as session:
 				async with session.get('http://118.31.18.68:8080/news/api/news-file/get') as resp:
 					ret = await resp.json()
+				date = datetime.datetime.strptime(ret['result']['date'], '%Y-%m-%d').astimezone(TZ).date()
+				if datetime.datetime.today().date() > date:
+					sv_query.logger.warning('易即简报今日未更新，等待后重试')
+					await asyncio.sleep(300)
+					continue
 				async with session.get(ret['result']['data'][0]) as resp:
 					ret = await resp.read()
 		except (
@@ -50,9 +58,13 @@ async def sixty_seconds() -> bytes:
 	while retry_attempts > 0:
 		try:
 			async with aiohttp.ClientSession(raise_for_status=True) as session:
-				# async with session.get('https://api.iyk0.com/60s/') as resp:
 				async with session.get('https://api.2xb.cn/zaob') as resp:
 					ret = await resp.json()
+				date = datetime.datetime.strptime(ret['datatime'], '%Y-%m-%d').astimezone(TZ).date()
+				if datetime.datetime.today().date() > date:
+					sv_query.logger.warning('每天60秒读懂世界今日未更新，等待后重试')
+					await asyncio.sleep(300)
+					continue
 				async with session.get(ret['imageUrl']) as resp:
 					ret = await resp.read()
 		except (
